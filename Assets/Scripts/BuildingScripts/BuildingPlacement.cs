@@ -1,19 +1,21 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using GridScripts;
 using UnityEngine;
 
-public class BuildingPlacement : MonoBehaviour {
+namespace BuildingScripts
+{
+    public class BuildingPlacement : MonoBehaviour {
 	
-	//production menu buttons calls this script it places the selected building as a mouse cursor
-	private MouseTracking me;
+        //production menu buttons calls this script it places the selected building as a mouse cursor
+        private MouseTracking me;
 
-	[SerializeField] private GameObject building;
+        [SerializeField] private GameObject building;
 
-	public void Send()
-	{
-		me = MouseTracking.me;
-		building = (GameObject) Instantiate(Resources.Load("Prefabs/" + transform.gameObject.name));
-		building.name = transform.gameObject.name;
-		me.Pick(building);
-	}
+        public void Send()
+        {
+            me = MouseTracking.me;
+            building = (GameObject) Instantiate(Resources.Load("Prefabs/" + transform.gameObject.name));
+            building.name = transform.gameObject.name;
+            me.Pick(building);
+        }
+    }
 }

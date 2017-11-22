@@ -1,11 +1,14 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
+﻿using BuildingScripts;
+using GridScripts;
+using UnityEngine;
 
-public class UnitProduction : MonoBehaviour {
+namespace UnitScripts
+{
+    public class UnitProduction : MonoBehaviour {
 	
-	//unit production button calls this script
-	public void Send () {
-		SelectionManager.me.selected.GetComponentInChildren<BuildingManager>().Spawn(transform.gameObject.name);
-	}
+        //unit production button calls this script
+        public void Send () {
+            SelectionManager.me.selected.GetComponentInChildren<BuildingManager>().Spawn(transform.gameObject.name);
+        }
+    }
 }
