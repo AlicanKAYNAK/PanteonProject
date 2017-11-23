@@ -1,5 +1,4 @@
 ﻿using BuildingScripts;
-using CanvasScripts;
 using UnityEngine;
 
 //mouse tracking is used in building construction
@@ -8,6 +7,9 @@ namespace GridScripts
     public class MouseTracking : MonoBehaviour {
 
         public static MouseTracking me { get; private set; }
+
+        public delegate void BuildingCreationEventHandler(bool b); //delegate for error messages
+        public static event BuildingCreationEventHandler BuildingCreation;
 
         public GameObject buildingCursor;
         public bool cursorActive;
@@ -41,7 +43,7 @@ namespace GridScripts
         //mouse tracking left click calls this to check the conditions of the location and if those are valid building drops
         public void CreatingBuildingsLeftMouseClick (GameObject selectedBuilding) {
             if (selectedBuilding != null) {
-                BuildingManager selectedBuildScript = selectedBuilding.GetComponent<BuildingManager> ();
+                var selectedBuildScript = selectedBuilding.GetComponent<BuildingManager> ();
                 if (selectedBuildScript != null) { 
                     SelectionManager.me.getMultipleTilesFromCoords (selectedBuilding.transform.localPosition, selectedBuildScript.widthInTiles, selectedBuildScript.heightInTiles); 
                     selectedBuildScript.isCurrentLocAValidForConstruction ();
@@ -55,8 +57,7 @@ namespace GridScripts
             SelectionManager.me.enabled = false;
             cursorActive = true;
             buildingCursor = b;
-            CanvasManager.me.productionMenu.SetActive(false);
-            CanvasManager.me.informationMenu.SetActive (false);
+            OnBuildingCreation(true);
         }
 
         ////when a building is placed on grid production menu other selection actions and production menu active again and that bulding is checked as dropped for information menu access
@@ -65,7 +66,7 @@ namespace GridScripts
             cursorActive = false;
             buildingCursor.GetComponentInChildren<BuildingManager> ().dropCheck = true;
             buildingCursor = null;
-            CanvasManager.me.productionMenu.SetActive(true);
+            OnBuildingCreation(false);
         }
 
         //removes the object stuck on cursor and actives the menus again
@@ -74,7 +75,15 @@ namespace GridScripts
             {
                 SelectionManager.me.enabled = true;
                 Destroy(buildingCursor);
-                CanvasManager.me.productionMenu.SetActive(true);
+                OnBuildingCreation(false);
+            }
+        }
+
+        protected virtual void OnBuildingCreation(bool b)
+        {
+            if (BuildingCreation != null)
+            {
+                BuildingCreation.Invoke(b);
             }
         }
     }

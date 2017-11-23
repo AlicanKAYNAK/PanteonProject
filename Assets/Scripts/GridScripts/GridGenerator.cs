@@ -33,10 +33,10 @@ namespace GridScripts
 		
         //creates a grid based on the dimensions provided
         void generateGrid () {
-            for (int x = 0; x < gridDimensions.x; x++) {
-                for (int y = 0; y < gridDimensions.y; y++) {
-                    Vector3 posToCreateTile = new Vector3 (x, y, 0);
-                    GameObject mostRecentTile = (GameObject)Instantiate (grass, posToCreateTile, Quaternion.Euler (0, 0, 0));
+            for (var x = 0; x < gridDimensions.x; x++) {
+                for (var y = 0; y < gridDimensions.y; y++) {
+                    var posToCreateTile = new Vector3 (x, y, 0);
+                    var mostRecentTile = (GameObject)Instantiate (grass, posToCreateTile, Quaternion.Euler (0, 0, 0));
                     mostRecentTile.GetComponent<TileMasterClass> ().setGridCoords (new Vector2 (x, y));
                     mostRecentTile.transform.parent = this.gameObject.transform;
                     mostRecentTile.name = "Tile " + mostRecentTile.GetComponent<TileMasterClass> ().getGridCoords ().ToString ();
@@ -76,9 +76,9 @@ namespace GridScripts
             }
 
 
-            for(int x = (int)lowestX;x<=(int)highestX;x++)
+            for(var x = (int)lowestX;x<=(int)highestX;x++)
             {
-                for (int y = (int)lowestY; y <= (int)highestY; y++) {
+                for (var y = (int)lowestY; y <= (int)highestY; y++) {
                     retVal.Add (gridOfTiles [x, y].gameObject);
                 }
             }
@@ -91,7 +91,7 @@ namespace GridScripts
             List<TileMasterClass> retVal = new List<TileMasterClass>();
             TileMasterClass t = Tile;
 
-            Vector2 pos = t.getGridCoords ();
+            var pos = t.getGridCoords ();
 
             //passed in tile is at left edge
             if (pos.x == 0) {

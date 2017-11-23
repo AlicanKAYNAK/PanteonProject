@@ -1,5 +1,4 @@
-﻿using CanvasScripts;
-using GridScripts;
+﻿using GridScripts;
 using UnitScripts;
 using UnityEngine;
 
@@ -14,17 +13,18 @@ namespace BuildingScripts
 
         public override void Spawn (string unit) {
             if (!spawnPoint.activeSelf) {
-                ErrorMessage.me.PassErrorMessage ("Assign a spawn point");
+                OnErrorOccured("Assign a spawn point");
+                //ErrorMessage.me.PassErrorMessage ("Assign a spawn point");
             } else {
-                Vector3 unitPos = new Vector3 (transform.position.x, transform.position.y - 2, -1f);
+                var unitPos = new Vector3 (transform.position.x, transform.position.y - 2, -1f);
                 //spawnUnit = Instantiate ((GameObject)Resources.Load ("Prefabs/" + spawnUnit.name.Replace("(Clone)","")), unitPos, Quaternion.identity);
                 spawnUnit = Instantiate ((GameObject)Resources.Load ("Prefabs/" + unit), unitPos, Quaternion.identity);
                 spawnUnit.name = unit;
-                Vector3 spawnPos = new Vector3 (this.spawnPoint.transform.position.x, this.spawnPoint.transform.position.y, -1f);
+                var spawnPos = new Vector3 (this.spawnPoint.transform.position.x, this.spawnPoint.transform.position.y, -1f);
 
                 UnitMasterClass um = spawnUnit.GetComponent<UnitMasterClass> ();
                 Action a = spawnUnit.AddComponent<Action_MoveToLocation> ();
-                if (um.canWePerformAction (a) == true) {
+                if (um.canWePerformAction (a)) {
                     a.initaliseLocation (spawnPos);
                     um.actionsQueue.Add (a);
                 } else {
@@ -48,15 +48,14 @@ namespace BuildingScripts
             }
         }
 
-        //does regular what onmousedown function does and activates spawn point of the barracks onclick is defined as a right click action so it places spawn point location on that mouse position
-        internal override void OnMouseDown () {
-            base.OnMouseDown ();
-            SelectionManager.onClick += SpawnPoint;
+        //activates spawn point of the barracks 
+        internal virtual void OnMouseDown () {
+            SelectionManager.RightClickBuilding += OnRightClickBuilding;
             spawnPoint.SetActive (true);
         }
 
         // setting spawn point as the given position which will be mouse position of when right clicked
-        public void SpawnPoint (Vector3 pos) {
+        public void OnRightClickBuilding(Vector3 pos) {
             pos.z = -1;
             spawnPoint.transform.position = pos;
         }

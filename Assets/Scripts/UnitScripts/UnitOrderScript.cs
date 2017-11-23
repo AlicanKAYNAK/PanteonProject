@@ -14,8 +14,8 @@ namespace UnitScripts
         {
             if (areAnyUnitsSelected() == true) {
                 if (Input.GetMouseButtonDown (1)) {
-                    Vector3 mousePos = Input.mousePosition;
-                    Vector3 mouseInWorld = Camera.main.ScreenToWorldPoint (mousePos);
+                    var mousePos = Input.mousePosition;
+                    var mouseInWorld = Camera.main.ScreenToWorldPoint (mousePos);
                     mouseInWorld.z = 0;
 
                     foreach (GameObject g in SelectionManager.me.getSelected()) {

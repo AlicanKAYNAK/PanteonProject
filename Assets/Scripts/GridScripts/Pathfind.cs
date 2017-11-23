@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using CanvasScripts;
 using TileScripts;
 using UnityEngine;
 
@@ -8,6 +7,9 @@ namespace GridScripts
     public class Pathfind : MonoBehaviour {
 	
         public static Pathfind me { get; private set; }
+
+        public delegate void ErrorOccuredEventHandler(string s);
+        public static event ErrorOccuredEventHandler ErrorOccured;
 
         private void Awake () {
             if (me != null && me != this)
@@ -27,14 +29,14 @@ namespace GridScripts
 
         //actual pathfinding uses reference for convenience sets parents of the tiles to form a path
         void getPath (Vector3 startPos, Vector3 endPos, ref List<TileMasterClass> store) {
-            Vector2 sPos = new Vector2 ((int)startPos.x, (int)startPos.y);//rough tile coords
-            Vector2 ePos = new Vector2 ((int)endPos.x, (int)endPos.y);
+            var sPos = new Vector2 ((int)startPos.x, (int)startPos.y);//rough tile coords
+            var ePos = new Vector2 ((int)endPos.x, (int)endPos.y);
 
-            TileMasterClass startNode = GridGenerator.me.getTile ((int)sPos.x, (int)sPos.y); //tiles from the coords
-            TileMasterClass targetNode = GridGenerator.me.getTile ((int)ePos.x, (int)ePos.y);
+            var startNode = GridGenerator.me.getTile ((int)sPos.x, (int)sPos.y); //tiles from the coords
+            var targetNode = GridGenerator.me.getTile ((int)ePos.x, (int)ePos.y);
 
             if (startNode==null || targetNode==null || targetNode.isTileWalkable () == false ) {
-                ErrorMessage.me.PassErrorMessage ("One of the tiles is not walkable");
+                OnErrorOccured("One of the tiles is not walkable");
                 return;
             }
 
@@ -43,9 +45,9 @@ namespace GridScripts
             openSet.Add(startNode);
 
             while (openSet.Count > 0) { //cycle through the open set
-                TileMasterClass node = openSet[0];
+                var node = openSet[0];
 
-                for (int i = 1; i < openSet.Count; i ++) {
+                for (var i = 1; i < openSet.Count; i ++) {
                     if (openSet[i].fCost < node.fCost || openSet[i].fCost == node.fCost) { //check if we can find a tile with lower or equal distance to target from start including this tile
                         if (openSet[i].getH() < node.getH())//if the tile has a lower distance to the target tile than the current one in node
                             node = openSet[i];//sets node to be this closer tile
@@ -60,15 +62,14 @@ namespace GridScripts
                     return;
                 }
 
-                foreach (TileMasterClass neighbour in GridGenerator.me.getTileNeighbors(node)) { //goes through each of the neighbors of the node
+                foreach (var neighbour in GridGenerator.me.getTileNeighbors(node)) { //goes through each of the neighbors of the node
 
                     if (!neighbour.isTileWalkable()  || closedSet.Contains(neighbour) || neighbour==null || node==null) {//if the neighbor is not accessable or the node is null go onto next neighbor
                         continue;
                     }
 
-                    int newCostToNeighbour = node.getG () + GetDistance(node, neighbour);//calculates the cost of going to the neighbor from the start of the path
+                    var newCostToNeighbour = node.getG () + GetDistance(node, neighbour);//calculates the cost of going to the neighbor from the start of the path
                     if (newCostToNeighbour < neighbour.getG() || !openSet.Contains(neighbour)) {//if the cost is shorter and the open set doesnt contain the neighbor
-					
                         neighbour.setG(newCostToNeighbour);
                         neighbour.setH(GetDistance(neighbour, targetNode));//set the g and h values of the neighbor
                         neighbour.setParent(node);//sets the parent of the neighbor to be the node signifying that in the path you'll go from the node to the neighbor
@@ -91,7 +92,7 @@ namespace GridScripts
         //goes through the path via the parent variable and puts it in a list 
         void RetracePath (TileMasterClass startNode,TileMasterClass targetNode,ref List<TileMasterClass> store) { 
             List<TileMasterClass> path = new List<TileMasterClass>();
-            TileMasterClass currentNode = targetNode;
+            var currentNode = targetNode;
 
             while (currentNode != startNode) {
                 path.Add(currentNode);
@@ -103,12 +104,19 @@ namespace GridScripts
 
         //gets the distance between two grid coords and returns them multiplied
         int GetDistance (TileMasterClass nodeA,TileMasterClass nodeB) {
-            int dstX = Mathf.Abs((int)nodeA.getGridCoords().x - (int)nodeB.getGridCoords().x);
-            int dstY = Mathf.Abs((int)nodeA.getGridCoords().y - (int)nodeB.getGridCoords().y);
+            var dstX = Mathf.Abs((int)nodeA.getGridCoords().x - (int)nodeB.getGridCoords().x);
+            var dstY = Mathf.Abs((int)nodeA.getGridCoords().y - (int)nodeB.getGridCoords().y);
 
             if (dstX > dstY)//to make sure that the final number is positive
                 return 14*dstY + 10* (dstX-dstY);
             return 14*dstX + 10 * (dstY-dstX);
+        }
+        protected virtual void OnErrorOccured(string s)
+        {
+            if (ErrorOccured != null)
+            {
+                ErrorOccured.Invoke(s);
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using GridScripts;
+using UnityEngine;
 
 namespace BuildingScripts
 {
@@ -10,6 +11,18 @@ namespace BuildingScripts
 
         public override GameObject getUnit () {
             return null;
+        }
+
+        //left click on powerplant
+        internal virtual void OnMouseDown()
+        {
+            SelectionManager.RightClickBuilding += OnRightClickBuilding;
+        }
+
+        // has no spawn point
+        public void OnRightClickBuilding(Vector3 pos)
+        {
+            OnErrorOccured("There is no Spawn point for this building!");
         }
     }
 }

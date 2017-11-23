@@ -44,7 +44,7 @@ namespace CanvasScripts
             //top 2 buttons y position are same so it is enough to check for only 1. if their position is greater than padding + top of the screen first two becomes last two
             if (firstTwoButton[0].transform.position.y > upperLimit + paddingY) {
                 tempLocation = 0 - cellSizeY - paddingY;
-                for (int i = 0; i < 2; i++) {
+                for (var i = 0; i < 2; i++) {
                     scrollButton (i, tempLocation);	
                 }
                 //first and last buttons changed so resetting them
@@ -52,7 +52,7 @@ namespace CanvasScripts
                 SetLastButtons();
             } else if (lastTwoButton[0].transform.position.y < -2 ) {
                 tempLocation = cellSizeY + paddingY;
-                for (int i = 1; i > -1; i--) {//reverse order to not to disturb the order of the list
+                for (var i = 1; i > -1; i--) {//reverse order to not to disturb the order of the list
                     scrollButton (i, tempLocation);	
                 }
                 //first and last buttons changed so resetting them

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using CanvasScripts;
 using TileScripts;
 using UnityEngine;
 
@@ -9,8 +8,12 @@ namespace GridScripts
 
         public static SelectionManager me { get; private set; }
 
-        public static event RightClickAction onClick; 
-        public delegate void RightClickAction(Vector3 pos); // delegate for right click events
+        public delegate void ErrorOccuredEventHandler(string s); //delegate for error messages
+        public static event ErrorOccuredEventHandler ErrorOccured;
+        public delegate void LeftClickBuildingEventHandler(bool b); //delegate for leftclicks without building tag
+        public static event LeftClickBuildingEventHandler LeftClickBuilding;
+        public delegate void RightClickBuildingEcentHandler(Vector3 pos); //delegate for right click events
+        public static event RightClickBuildingEcentHandler RightClickBuilding; 
         public GameObject selected; //used as storage what have I selected
 
         public List<GameObject> currentlySelected; //used in building placement to have an easy access to tiles I need to check
@@ -27,46 +30,38 @@ namespace GridScripts
 
         //regular raycast on mouse position to check the objects and select them properly 
         private void Update () {
-            Vector2 mousePos = new Vector2 (Camera.main.ScreenToWorldPoint (Input.mousePosition).x, Camera.main.ScreenToWorldPoint (Input.mousePosition).y);
+            var mousePos = new Vector2 (Camera.main.ScreenToWorldPoint (Input.mousePosition).x, Camera.main.ScreenToWorldPoint (Input.mousePosition).y);
 
             if (Input.GetMouseButtonDown (0)) {
-
                 RaycastHit2D raycast = Physics2D.Raycast (mousePos, Vector2.zero, 0f);
                 try {
-                    GameObject hitObject = raycast.collider.gameObject;
-
-                    if (hitObject.CompareTag("Unit")) {
-                        setSelected (hitObject);
-                        clearDelegate();
-                        CanvasManager.me.informationMenu.SetActive(false);
-                    } else if (hitObject.CompareTag("Building")) {
-                        setSelected (hitObject);
-                    } else if (hitObject.CompareTag("Tile")) {
-                        selected = null;
-                        clearSelected();
-                        clearDelegate();
-                        CanvasManager.me.informationMenu.SetActive(false);
+                    var hitObject = raycast.collider.gameObject;
+                    setSelected (hitObject);
+                    if (hitObject.CompareTag("Building"))
+                    {
+                        OnLeftClickBuilding(false);
+                        OnLeftClickBuilding(true);
                     }
-
+                    else
+                    {
+                        OnLeftClickBuilding(false);
+                    }
                 } catch {
                     clearSelected();
-                    clearDelegate();
                 }
             } else if (Input.GetMouseButtonDown(1) && selected == null) {
                 clearSelected();
-                clearDelegate();
             } else if (Input.GetMouseButtonDown(1) && selected.CompareTag("Building")) {
-                TileMasterClass targetNode = GridGenerator.me.getTile ((int)mousePos.x, (int)mousePos.y);
-                if (onClick != null && targetNode != null) {
-                    onClick(mousePos); // barracks spawn point place change
+                var targetNode = GridGenerator.me.getTile ((int)mousePos.x, (int)mousePos.y);
+                if (targetNode != null){
+                    if (RightClickBuilding != null) {
+                        RightClickBuilding(mousePos);
+                        RightClickBuilding = null; //spawn point set is limited to 1 try if the user wants to change it again they should click on the building again
+                    }
                 } else {
-                    ErrorMessage.me.PassErrorMessage ("There is no tile to put the Spawn Point on or the building has nothing to spawn");
+                    OnErrorOccured("There is no tile to put the Spawn Point on");
                 } 
             }
-        }
-
-        public void clearDelegate () {
-            onClick = null;
         }
 
         public void clearSelectedIfAnyNull () {
@@ -87,20 +82,20 @@ namespace GridScripts
                 GameObject tileAtMousePoint=null;
                 tileAtMousePoint = GridGenerator.me.getTile((int)mousePos.x,(int)mousePos.y).gameObject;
                 TileMasterClass tm = tileAtMousePoint.GetComponent<TileMasterClass> (); 
-                Vector2 tileGridCoords = tm.getGridCoords ();
+                var tileGridCoords = tm.getGridCoords ();
 
                 if (isSelectionInGridRange (tileGridCoords, width, height) == true) {
-                    Vector2 startPos = new Vector2 (tileGridCoords.x - (width / 2), tileGridCoords.y - (height / 2));
-                    Vector2 endPos = new Vector2 (tileGridCoords.x + (width / 2), tileGridCoords.y + (height / 2));
+                    var startPos = new Vector2 (tileGridCoords.x - (width / 2), tileGridCoords.y - (height / 2));
+                    var endPos = new Vector2 (tileGridCoords.x + (width / 2), tileGridCoords.y + (height / 2));
                     setSelected(GridGenerator.me.getTiles(startPos,endPos),true);
                 } else {
                     clearSelected ();
-                    ErrorMessage.me.PassErrorMessage ("Not enough space");
+                    OnErrorOccured("Not enough space");
                 }
             }
             catch {
                 clearSelected ();
-                ErrorMessage.me.PassErrorMessage ("No tile at mouse position");
+                OnErrorOccured("No tile at mouse position");
             }
         }
 
@@ -131,7 +126,7 @@ namespace GridScripts
 
         //for multiple object setting like tiles
         public void setSelected (List<GameObject> toSet, bool clearExisting)	{
-            if (clearExisting == true) {
+            if (clearExisting) {
                 clearSelected ();
             }
             currentlySelected = toSet;
@@ -156,6 +151,30 @@ namespace GridScripts
                 }
             }
             currentlySelected = new List<GameObject> ();
+        }
+ 
+        protected virtual void OnErrorOccured(string s)
+        {
+            if (ErrorOccured != null)
+            {
+                ErrorOccured.Invoke(s);
+            }
+        }
+
+        protected virtual void OnLeftClickBuilding(bool b)
+        {
+            if (LeftClickBuilding != null)
+            {
+                LeftClickBuilding.Invoke(b);
+            }
+        }
+
+        protected virtual void OnRightClickBuilding(Vector3 pos)
+        {
+            if (RightClickBuilding != null)
+            {
+                RightClickBuilding.Invoke(pos);
+            }
         }
     }
 }

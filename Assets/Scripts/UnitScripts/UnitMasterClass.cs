@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
-using CanvasScripts;
 using UnityEngine;
 
 namespace UnitScripts
 {
     public class UnitMasterClass : MonoBehaviour {
+
+        public delegate void ErrorOccuredEventHandler(string s);
+        public static event ErrorOccuredEventHandler ErrorOccured;
 
         //base class of all units
         public List<Action> actionsQueue;
@@ -34,11 +36,11 @@ namespace UnitScripts
                         actionsQueue [0].actionStarted = true;
                     } catch {
                         //when spawning massive numbers of soldiers if they all choose a location that they cant go because its unreachable they would stack on each other
-                        ErrorMessage.me.PassErrorMessage ("There is no avaliable way to this tile..");
+                        OnErrorOccured("There is no avaliable way to this tile..");
                         a.cleanUp ();
                     }
                 } else {
-                    if (actionsQueue [0].getIsActionComplete () == true) {
+                    if (actionsQueue [0].getIsActionComplete ()) {
                         removeCurrentAction ();
                     }
                 }
@@ -53,6 +55,13 @@ namespace UnitScripts
                 return false;
             } else {
                 return false;
+            }
+        }
+        protected virtual void OnErrorOccured(string s)
+        {
+            if (ErrorOccured != null)
+            {
+                ErrorOccured.Invoke(s);
             }
         }
     }

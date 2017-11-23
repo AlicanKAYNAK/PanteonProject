@@ -42,7 +42,7 @@ namespace UnitScripts
         void moveAlongPath () {
 
             if (Vector3.Distance (this.transform.position, curPath [pathCounter]) > 0.5f) {
-                Vector3 dir = curPath [pathCounter] - transform.position;
+                var dir = curPath [pathCounter] - transform.position;
                 transform.Translate (dir * 5 * Time.deltaTime);
             } else {
                 if (pathCounter < curPath.Count - 1) {

@@ -1,11 +1,14 @@
 ﻿using System.Collections;
+using BuildingScripts;
+using GridScripts;
+using UnitScripts;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace CanvasScripts
 {
     public class ErrorMessage : MonoBehaviour {
-
+        
         public static ErrorMessage me { get; private set; }
 
         void Awake () {
@@ -17,12 +20,11 @@ namespace CanvasScripts
         }
 
         private void Start () {
-            GetComponent<Text> ().text = string.Empty;
-            StartCoroutine (ShowError ());
-        }
-
-        public void PassErrorMessage (string s) {
-            GetComponent<Text> ().text = s;
+            GetComponent<Text>().text = string.Empty;
+            BuildingManager.ErrorOccured += OnErrorOccured;
+            SelectionManager.ErrorOccured += OnErrorOccured;
+            UnitMasterClass.ErrorOccured += OnErrorOccured;
+            Pathfind.ErrorOccured += OnErrorOccured;
         }
 
         private IEnumerator ShowError () {
@@ -33,6 +35,12 @@ namespace CanvasScripts
                     GetComponent<Text>().text = string.Empty;
                 }
             }
+        }
+
+        public void OnErrorOccured(string s)
+        {
+            GetComponent<Text>().text = s;
+            StartCoroutine(ShowError());
         }
     }
 }
